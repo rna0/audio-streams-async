@@ -17,14 +17,12 @@ namespace audioStreamFinal
 		private volatile bool connected;
 		private NetworkAudioPlayer player;
 		private NetworkAudioSender audioSender;
-		//Timer VolumeBar = new Timer{ Interval = 10, Enabled = false };
 		private List<CodecComboItem> comboBoxCodecs = new List<CodecComboItem>();
 		private List<string> comboBoxInputDevices = new List<string>();
 		private int comboBoxCodecsIndex = 0;
 		private bool isUDP = true;
 		string ipAddr = "192.168.1.167";
 		string textPort = "8192";
-		//between 0 and 10
 		int audioValue = 10;
 
 		public static int inputSens;
@@ -40,18 +38,12 @@ namespace audioStreamFinal
 			// Use reflection to find all the codecs
 			var codecs = ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>();
 
-			//InitializeComponent();
 			PopulateInputDevicesCombo();
 			PopulateCodecsCombo(codecs);
-			//comboBoxProtocol.Items.Add("UDP");
-			//comboBoxProtocol.Items.Add("TCP");
-			//comboBoxProtocol.SelectedIndex = 0;
-			//Disposed += OnPanelDisposed;
 
 			uint CurrVol = 0;
 			waveOutGetVolume(IntPtr.Zero, out CurrVol);
 			ushort CalcVol = (ushort)(CurrVol & 0x0000FFFF);
-			//trackBar1.Value = CalcVol / (ushort.MaxValue / 10);
 
 
 			_ = StartStreamingAsync();
@@ -69,9 +61,8 @@ namespace audioStreamFinal
 				var text = $"{codec.Name} ({bitRate})";
 				comboBoxCodecs.Add(new CodecComboItem { Text = text, Codec = codec });
 			}
-			//comboBoxCodecsIndex = 3;
 
-
+			//see the full speakers list
 			//foreach (CodecComboItem item in comboBoxCodecs)
 			//{
 			//	Console.WriteLine(item.Text);
@@ -105,7 +96,6 @@ namespace audioStreamFinal
 		{
 			if (!connected)
 			{
-				//Console.WriteLine("Please enter the port you are willing to use");
 				if (textPort == "")
 				{
 					Console.WriteLine("**Please provide correct port**");
@@ -126,10 +116,8 @@ namespace audioStreamFinal
 					IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
 					int inputDeviceNumber = comboBoxCodecsIndex;
 					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-					//await Task.Yield();
 					Connect(isUDP, endPoint, inputDeviceNumber, selectedCodec);
 					Console.WriteLine("-Connected");
-					//buttonStartStreaming.Text = "Disconnect";
 				}
 				catch (Exception e)
 				{
@@ -142,7 +130,6 @@ namespace audioStreamFinal
 			{
 				Disconnect();
 				Console.WriteLine("-Disconnected");
-				//buttonStartStreaming.Text = "Connect";
 			}
 		}
 		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
@@ -176,7 +163,6 @@ namespace audioStreamFinal
 		{
 			Properties.Settings.Default.IP = ipAddr;
 			Properties.Settings.Default.Port = textPort;
-			//Properties.Settings.Default.Tracklock = trackBar2.Value;
 			Properties.Settings.Default.Save();
 		}
 
