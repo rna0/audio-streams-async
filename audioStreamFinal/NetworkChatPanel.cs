@@ -165,14 +165,15 @@ namespace audioStreamFinal
 			Properties.Settings.Default.Port = textPort;
 			Properties.Settings.Default.Save();
 		}
-
-		private void trackBar1_Scroll()
+		/*
+		private void outputVolumeControl()
 		{
 			//Main audio output volume control
 			int newVolume = ((ushort.MaxValue / 10) * audioValue);
 			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
 			waveOutSetVolume(IntPtr.Zero, NewVolumeAllChannels);
 		}
+		*/
 		public static IPEndPoint CreateIPEndPoint(string endPoint)
 		{
 			string[] ep = endPoint.Split(':');

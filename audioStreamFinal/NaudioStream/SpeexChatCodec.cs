@@ -9,32 +9,6 @@ using System.Diagnostics;
 
 namespace audioStreamFinal
 {
-    class NarrowBandSpeexCodec : SpeexChatCodec
-    {
-        public NarrowBandSpeexCodec() :
-            base(BandMode.Narrow, 8000, "Speex Narrow Band")
-        {
-
-        }
-    }
-
-    class WideBandSpeexCodec : SpeexChatCodec
-    {
-        public WideBandSpeexCodec() :
-            base(BandMode.Wide, 16000, "Speex Wide Band (16kHz)")
-        {
-
-        }
-    }
-
-    class UltraWideBandSpeexCodec : SpeexChatCodec
-    {
-        public UltraWideBandSpeexCodec() :
-            base(BandMode.UltraWide, 32000, "Speex Ultra Wide Band (32kHz)")
-        {
-
-        }
-    }
 
     abstract class SpeexChatCodec : INetworkChatCodec
     {
@@ -44,14 +18,6 @@ namespace audioStreamFinal
         private readonly WaveBuffer encoderInputBuffer;
         private readonly string description;
 
-        protected SpeexChatCodec(BandMode bandMode, int sampleRate, string description)
-        {
-            decoder = new SpeexDecoder(bandMode);
-            encoder = new SpeexEncoder(bandMode);
-            recordingFormat = new WaveFormat(sampleRate, 16, 1);
-            this.description = description;
-            encoderInputBuffer = new WaveBuffer(recordingFormat.AverageBytesPerSecond); // more than enough
-        }
 
         public string Name => description;
 
