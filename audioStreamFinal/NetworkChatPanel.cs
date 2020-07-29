@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace audioStreamFinal
 {
 	
-	public partial class NetworkChatPanel
+	public class NetworkChatPanel
 	{
 		private INetworkChatCodec selectedCodec;
 		private volatile bool connected;
@@ -62,7 +62,7 @@ namespace audioStreamFinal
 				comboBoxCodecs.Add(new CodecComboItem { Text = text, Codec = codec });
 			}
 
-			//see the full speakers list
+			//**see the full speakers list**
 			//foreach (CodecComboItem item in comboBoxCodecs)
 			//{
 			//	Console.WriteLine(item.Text);
@@ -116,7 +116,7 @@ namespace audioStreamFinal
 					IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
 					int inputDeviceNumber = comboBoxCodecsIndex;
 					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-					Connect(isUDP, endPoint, inputDeviceNumber, selectedCodec);
+					await ConnectAsync(isUDP, endPoint, inputDeviceNumber, selectedCodec);
 					Console.WriteLine("-Connected");
 				}
 				catch (Exception e)
@@ -128,11 +128,11 @@ namespace audioStreamFinal
 			}
 			else
 			{
-				Disconnect();
+				await DisconnectAsync();
 				Console.WriteLine("-Disconnected");
 			}
 		}
-		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
+		private async Task ConnectAsync(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
 		{
 			var receiver = (isUDP)
 				? (IAudioReceiver)new UdpAudioReceiver(endPoint.Port)
@@ -142,11 +142,11 @@ namespace audioStreamFinal
 				: new TcpAudioSender(endPoint);
 
 			player = new NetworkAudioPlayer(codec, receiver);
-			audioSender = new NetworkAudioSender(codec, inputDeviceNumber, sender);
+			audioSender =  new NetworkAudioSender(codec, inputDeviceNumber, sender);
 			connected = true;
 		}
 
-		private void Disconnect()
+		private async Task DisconnectAsync()
 		{
 			if (connected)
 			{

@@ -8,7 +8,7 @@ namespace audioStreamFinal
 	static class Program
 	{
 		[STAThread]
-		static void Main()
+		static async Task Main()
 		{
 			new NetworkChatPanel();
 			Console.ReadLine();
