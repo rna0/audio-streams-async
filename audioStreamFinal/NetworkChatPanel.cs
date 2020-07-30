@@ -7,6 +7,7 @@ using System.Net;
 using NAudio.Wave;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 
 namespace audioStreamFinal
 {
@@ -21,9 +22,9 @@ namespace audioStreamFinal
 		private List<string> comboBoxInputDevices = new List<string>();
 		private int comboBoxCodecsIndex = 0;
 		private bool isUDP = true;
-		string ipAddr = "192.168.1.167";
+		string ipAddr = GetLocalIPAddress();//"192.168.1.167";
 		string textPort = "8192";
-		int audioValue = 10;
+		//int audioValue = 10;
 
 		public static int inputSens;
 
@@ -199,6 +200,18 @@ namespace audioStreamFinal
 				throw new FormatException("Invalid port");
 			}
 			return new IPEndPoint(ip, port);
+		}
+		public static string GetLocalIPAddress()
+		{
+			var host = Dns.GetHostEntry(Dns.GetHostName());
+			foreach (var ip in host.AddressList)
+			{
+				if (ip.AddressFamily == AddressFamily.InterNetwork)
+				{
+					return ip.ToString();
+				}
+			}
+			throw new Exception("No network adapters with an IPv4 address in the system!");
 		}
 	}
 }
