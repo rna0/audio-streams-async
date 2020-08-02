@@ -46,8 +46,98 @@ namespace audioStreamFinal
 			waveOutGetVolume(IntPtr.Zero, out CurrVol);
 			ushort CalcVol = (ushort)(CurrVol & 0x0000FFFF);
 
+			consoleUserInterface();
 
-			_ = StartStreamingAsync();
+			//_ = StartStreamingAsync();
+		}
+
+		public void consoleUserInterface()
+		{
+
+			PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
+			char input;
+			do
+			{
+
+				Console.WriteLine("\nR - Refresh sources\n" +
+					"C - Choose source\n" +
+					"S - Start\n" +
+					"P - Stop\n" +
+					"E - Exit");
+				input = char.Parse(Console.ReadLine());
+				switch (input)
+				{
+					case 'R':
+					case 'r':
+						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
+						printSources();
+						break;
+					case 'C':
+					case 'c':
+						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
+						ChoosePrintSources();
+						break;
+					case 'S':
+					case 's':
+						StartInputOutputStream();
+						break;
+					case 'P':
+					case 'p':
+						StopInputOutputStream();
+						break;
+					case 'E':
+					case 'e':
+						StopInputOutputStream();
+						Environment.Exit(0);
+						break;
+					default:
+						Console.WriteLine("None of the above were selected");
+						break;
+				}
+			} while (true);
+		}
+
+		private void printSources()
+		{
+			//**see the full speakers list**
+			if (comboBoxCodecs.Count == 0)
+			{
+				Console.WriteLine("No MIC source found");
+				return;
+			}
+			foreach (CodecComboItem item in comboBoxCodecs)
+			{
+				Console.WriteLine(item.Text);
+			}
+		}
+		private void ChoosePrintSources()
+		{
+			//**see the full speakers list**
+			//**and then choose which one to use**
+			if (comboBoxCodecs.Count == 0)
+			{
+				Console.WriteLine("No MIC source found");
+				return;
+			}
+			Console.WriteLine("These are the possible sources:");
+			for (int i = 0; i < comboBoxCodecs.Count; i++)
+			{
+				Console.WriteLine((i + 1) + ". " + comboBoxCodecs[i].Text.ToString());
+			}
+			Console.WriteLine("\nType in the number in the according line: ");
+
+
+			Int32.TryParse(Console.ReadLine(), out comboBoxCodecsIndex);
+			--comboBoxCodecsIndex;
+			if (comboBoxCodecsIndex > 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
+			{
+				Console.WriteLine("Device " + comboBoxCodecsIndex + " selected successfully.");
+			}
+			else
+			{
+				comboBoxCodecsIndex = 0;
+				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + ", is first one By Default");
+			}
 		}
 		private void PopulateCodecsCombo(IEnumerable<INetworkChatCodec> codecs)
 		{
@@ -62,12 +152,6 @@ namespace audioStreamFinal
 				var text = $"{codec.Name} ({bitRate})";
 				comboBoxCodecs.Add(new CodecComboItem { Text = text, Codec = codec });
 			}
-
-			//**see the full speakers list**
-			//foreach (CodecComboItem item in comboBoxCodecs)
-			//{
-			//	Console.WriteLine(item.Text);
-			//}
 		}
 
 		class CodecComboItem
