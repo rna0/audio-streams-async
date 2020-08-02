@@ -22,9 +22,9 @@ namespace audioStreamFinal
 		private List<string> comboBoxInputDevices = new List<string>();
 		private int comboBoxCodecsIndex = 0;
 		private bool isUDP = true;
-		string ipAddr = GetLocalIPAddress();//"192.168.1.167";
+		string ipAddr = "192.168.1.167";//GetLocalIPAddress();//
 		string textPort = "8192";
-		//int audioValue = 10;
+		int audioValue = 10;
 
 		public static int inputSens;
 
@@ -166,7 +166,7 @@ namespace audioStreamFinal
 			Properties.Settings.Default.Port = textPort;
 			Properties.Settings.Default.Save();
 		}
-		/*
+		
 		private void outputVolumeControl()
 		{
 			//Main audio output volume control
@@ -174,7 +174,7 @@ namespace audioStreamFinal
 			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
 			waveOutSetVolume(IntPtr.Zero, NewVolumeAllChannels);
 		}
-		*/
+		
 		public static IPEndPoint CreateIPEndPoint(string endPoint)
 		{
 			string[] ep = endPoint.Split(':');
@@ -208,6 +208,7 @@ namespace audioStreamFinal
 			{
 				if (ip.AddressFamily == AddressFamily.InterNetwork)
 				{
+					Console.WriteLine("ip selected: "+ ip.ToString());
 					return ip.ToString();
 				}
 			}
