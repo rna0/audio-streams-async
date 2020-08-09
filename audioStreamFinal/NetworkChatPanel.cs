@@ -22,7 +22,7 @@ namespace audioStreamFinal
 		private List<string> comboBoxInputDevices = new List<string>();
 		private int comboBoxCodecsIndex = 0;
 		private bool isUDP = true;
-		string ipAddr = "192.168.1.167";//GetLocalIPAddress();//
+		string ipAddr = GetLocalIPAddress();//"192.168.1.167";
 		string textPort = "8192";
 		int audioValue = 10;
 
@@ -50,7 +50,17 @@ namespace audioStreamFinal
 
 			//_ = StartStreamingAsync();
 		}
+		private char inputCharOnly()
+		{
+			string try_input;
+			do
+			{
+				Console.WriteLine("enter a single character");
+				try_input = Console.ReadLine();
+			} while (try_input.Length != 1);
+			return char.Parse(try_input);
 
+		}
 		public void consoleUserInterface()
 		{
 
@@ -60,11 +70,14 @@ namespace audioStreamFinal
 			{
 
 				Console.WriteLine("\nR - Refresh sources\n" +
-					"C - Choose source\n" +
+					"C - Choose source microphone\n" +
+					"I - Choose IP to connect\n" +
+					"P - Choose Port to connect\n" +
 					"S - Start\n" +
-					"P - Stop\n" +
+					"D - Disconnect\n" +
 					"E - Exit");
-				input = char.Parse(Console.ReadLine());
+
+				input = inputCharOnly();
 				switch (input)
 				{
 					case 'R':
@@ -77,17 +90,29 @@ namespace audioStreamFinal
 						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
 						ChoosePrintSources();
 						break;
-					case 'S':
-					case 's':
-						StartInputOutputStream();
+					case 'I':
+					case 'i':
+						isIPOk();
+						Console.WriteLine(ipAddr + "is your current IP.");
 						break;
 					case 'P':
 					case 'p':
-						StopInputOutputStream();
+						Console.WriteLine(textPort + " is your current Port.");
+						isPortOk();
+						break;
+					case 'S':
+					case 's':
+						StartStreamingAsync();
+						Console.WriteLine("-Connected");
+						break;
+					case 'D':
+					case 'd':
+						DisconnectAsync();
+						Console.WriteLine("-Disconnected");
 						break;
 					case 'E':
 					case 'e':
-						StopInputOutputStream();
+						DisconnectAsync();
 						Environment.Exit(0);
 						break;
 					default:
@@ -96,7 +121,32 @@ namespace audioStreamFinal
 				}
 			} while (true);
 		}
+		private void isIPOk()
+		{
+		}
+		private void isPortOk()
+		{
+			do
+			{
+				Console.WriteLine("please provide an alternative Port:");
+				textPort = Console.ReadLine();
+				if (textPort == "")
+				{
+					Console.WriteLine("**Please provide correct port**");
+					textPort = "8192";
+				}
+				int port;
+				int.TryParse(textPort, out port);
+				if (port == 0 || port > 65535)
+				{
+					Console.WriteLine("**Bigger than 47823, made by default to 47823**");
+					port = 47823;
+					textPort = "47823";
+				}
 
+			} while(textPort == "" && Int32.Parse(textPort) > 65535);
+			Console.WriteLine(textPort + " Changed successfully");
+		}
 		private void printSources()
 		{
 			//**see the full speakers list**
@@ -141,6 +191,7 @@ namespace audioStreamFinal
 		}
 		private void PopulateCodecsCombo(IEnumerable<INetworkChatCodec> codecs)
 		{
+			comboBoxCodecs.Clear();
 			var sorted = from codec in codecs
 						 where codec.IsAvailable
 						 orderby codec.BitsPerSecond ascending
@@ -179,42 +230,20 @@ namespace audioStreamFinal
 
 		private async Task StartStreamingAsync()
 		{
-			if (!connected)
+			try
 			{
-				if (textPort == "")
-				{
-					Console.WriteLine("**Please provide correct port**");
-					textPort = "0000";
-				}
-
-				int port = Int32.Parse(textPort);
-
-				if (port > 65535)
-				{
-					Console.WriteLine("**Bigger than 65535, made by default to 65535**");
-					port = 65535;
-				}
-
-				PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
-				try
-				{
-					IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
-					int inputDeviceNumber = comboBoxCodecsIndex;
-					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-					await ConnectAsync(isUDP, endPoint, inputDeviceNumber, selectedCodec);
-					Console.WriteLine("-Connected");
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-					Console.WriteLine("**Please provide correct IP address**");
-				}
-
+				IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
+				int inputDeviceNumber = comboBoxCodecsIndex;
+				selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
+				await ConnectAsync(isUDP, endPoint, inputDeviceNumber, selectedCodec);
 			}
-			else
+			catch (Exception e)
 			{
-				await DisconnectAsync();
-				Console.WriteLine("-Disconnected");
+				if (e is NAudio.MmException)
+					Console.WriteLine("No microphones are connected");
+				else
+					Console.WriteLine(e);
+					Console.WriteLine("\n**remember, Please provide correct IP address**");
 			}
 		}
 		private async Task ConnectAsync(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
