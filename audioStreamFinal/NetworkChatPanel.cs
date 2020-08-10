@@ -11,7 +11,7 @@ using System.Net.Sockets;
 
 namespace audioStreamFinal
 {
-	
+
 	public class NetworkChatPanel
 	{
 		private INetworkChatCodec selectedCodec;
@@ -22,7 +22,7 @@ namespace audioStreamFinal
 		private List<string> comboBoxInputDevices = new List<string>();
 		private int comboBoxCodecsIndex = 0;
 		private bool isUDP = true;
-		string ipAddr = GetLocalIPAddress();//"192.168.1.167";
+		string ipAddr = GetLocalIPAddress();
 		string textPort = "8192";
 		int audioValue = 10;
 
@@ -47,8 +47,6 @@ namespace audioStreamFinal
 			ushort CalcVol = (ushort)(CurrVol & 0x0000FFFF);
 
 			consoleUserInterface();
-
-			//_ = StartStreamingAsync();
 		}
 		private char inputCharOnly()
 		{
@@ -72,6 +70,7 @@ namespace audioStreamFinal
 				Console.WriteLine("\nR - Refresh sources\n" +
 					"C - Choose source microphone\n" +
 					"I - Choose IP to connect\n" +
+					"O - Connect to original IP\n" +
 					"P - Choose Port to connect\n" +
 					"S - Start\n" +
 					"D - Disconnect\n" +
@@ -93,11 +92,16 @@ namespace audioStreamFinal
 					case 'I':
 					case 'i':
 						isIPOk();
-						Console.WriteLine(ipAddr + "is your current IP.");
+						Console.WriteLine("\n# " + ipAddr + " is your current IP.");
+						break;
+					case 'O':
+					case 'o':
+						ipAddr = GetLocalIPAddress();
+						Console.WriteLine("\n# " + ipAddr + " is your current IP.");
 						break;
 					case 'P':
 					case 'p':
-						Console.WriteLine(textPort + " is your current Port.");
+						Console.WriteLine("\n# " + textPort + " is your current Port.");
 						isPortOk();
 						break;
 					case 'S':
@@ -123,6 +127,30 @@ namespace audioStreamFinal
 		}
 		private void isIPOk()
 		{
+			bool IpOk;
+			byte tempForParsing;
+			string[] splitValues;
+			do
+			{
+				Console.WriteLine("please enter a valid IP: ");
+				ipAddr = Console.ReadLine();
+				if (String.IsNullOrWhiteSpace(ipAddr))
+				{
+					IpOk = false;
+				}
+				else
+				{
+					splitValues = ipAddr.Split('.');
+					if (splitValues.Length != 4)
+					{
+						IpOk = false;
+					}
+					else
+						IpOk = splitValues.All(r => byte.TryParse(r, out tempForParsing));
+				}
+
+			} while (!IpOk);
+			Console.WriteLine(ipAddr + " Changed successfully");
 		}
 		private void isPortOk()
 		{
@@ -135,16 +163,19 @@ namespace audioStreamFinal
 					Console.WriteLine("**Please provide correct port**");
 					textPort = "8192";
 				}
-				int port;
-				int.TryParse(textPort, out port);
-				if (port == 0 || port > 65535)
+				else
 				{
-					Console.WriteLine("**Bigger than 47823, made by default to 47823**");
-					port = 47823;
-					textPort = "47823";
+					int port;
+					int.TryParse(textPort, out port);
+					if (port == 0 || port > 47823)
+					{
+						Console.WriteLine("** " + port + "is Bigger than 47823 or zero, made by default to 47823**");
+						port = 47823;
+						textPort = "47823";
+					}
 				}
 
-			} while(textPort == "" && Int32.Parse(textPort) > 65535);
+			} while (textPort == "" && Int32.Parse(textPort) > 47823);
 			Console.WriteLine(textPort + " Changed successfully");
 		}
 		private void printSources()
@@ -197,7 +228,7 @@ namespace audioStreamFinal
 						 orderby codec.BitsPerSecond ascending
 						 select codec;
 
-			foreach(var codec in sorted)
+			foreach (var codec in sorted)
 			{
 				var bitRate = codec.BitsPerSecond == -1 ? "VBR" : $"{codec.BitsPerSecond / 1000.0:0.#}kbps";
 				var text = $"{codec.Name} ({bitRate})";
@@ -217,7 +248,7 @@ namespace audioStreamFinal
 
 		private void PopulateInputDevicesCombo()
 		{
-			for(int n = 0; n < WaveIn.DeviceCount; n++)
+			for (int n = 0; n < WaveIn.DeviceCount; n++)
 			{
 				var capabilities = WaveIn.GetCapabilities(n);
 				comboBoxInputDevices.Add(capabilities.ProductName);
@@ -243,7 +274,7 @@ namespace audioStreamFinal
 					Console.WriteLine("No microphones are connected");
 				else
 					Console.WriteLine(e);
-					Console.WriteLine("\n**remember, Please provide correct IP address**");
+				Console.WriteLine("\n**remember, Please provide correct IP address**");
 			}
 		}
 		private async Task ConnectAsync(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
@@ -256,7 +287,7 @@ namespace audioStreamFinal
 				: new TcpAudioSender(endPoint);
 
 			player = new NetworkAudioPlayer(codec, receiver);
-			audioSender =  new NetworkAudioSender(codec, inputDeviceNumber, sender);
+			audioSender = new NetworkAudioSender(codec, inputDeviceNumber, sender);
 			connected = true;
 		}
 
@@ -279,7 +310,7 @@ namespace audioStreamFinal
 			Properties.Settings.Default.Port = textPort;
 			Properties.Settings.Default.Save();
 		}
-		
+
 		private void outputVolumeControl()
 		{
 			//Main audio output volume control
@@ -287,7 +318,7 @@ namespace audioStreamFinal
 			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
 			waveOutSetVolume(IntPtr.Zero, NewVolumeAllChannels);
 		}
-		
+
 		public static IPEndPoint CreateIPEndPoint(string endPoint)
 		{
 			string[] ep = endPoint.Split(':');
@@ -321,7 +352,7 @@ namespace audioStreamFinal
 			{
 				if (ip.AddressFamily == AddressFamily.InterNetwork)
 				{
-					Console.WriteLine("ip selected: "+ ip.ToString());
+					Console.WriteLine("your IP: " + ip.ToString() + "\nalso this is the default delected IP adress");
 					return ip.ToString();
 				}
 			}
