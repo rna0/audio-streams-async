@@ -225,12 +225,12 @@ namespace audioStreamFinal
 			--comboBoxCodecsIndex;
 			if (comboBoxCodecsIndex > 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
 			{
-				Console.WriteLine("Device " + comboBoxCodecsIndex + " selected successfully.");
+				Console.WriteLine("Device " + comboBoxCodecsIndex + 1 + " selected successfully.");
 			}
 			else
 			{
 				comboBoxCodecsIndex = 0;
-				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + ", is first one By Default");
+				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + 1 + ", is first one By Default");
 			}
 		}
 		private void PopulateCodecsCombo(IEnumerable<INetworkChatCodec> codecs)
