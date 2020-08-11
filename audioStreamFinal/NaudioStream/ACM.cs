@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq;
-using NAudio;
+﻿using NAudio;
 using NAudio.Wave;
 using NAudio.Wave.Compression;
+using System;
 
 namespace audioStreamFinal
 {
@@ -24,17 +23,17 @@ namespace audioStreamFinal
 
 		public byte[] Encode(byte[] data, int offset, int length)
 		{
-			if(encodeStream == null)
+			if (encodeStream == null)
 			{
 				encodeStream = new AcmStream(RecordFormat, encodeFormat);
 			}
 			return Convert(encodeStream, data, offset, length, ref encodeSourceBytesLeftovers);
 		}
-		
+
 
 		public byte[] Decode(byte[] data, int offset, int length)
 		{
-			if(decodeStream == null)
+			if (decodeStream == null)
 			{
 				decodeStream = new AcmStream(encodeFormat, RecordFormat);
 			}
@@ -47,7 +46,7 @@ namespace audioStreamFinal
 			Array.Copy(data, offset, conversionStream.SourceBuffer, sourceBytesLeftovers, length);
 			int bytesConverted = conversionStream.Convert(bytesInSourceBuffer, out var sourceBytesConverted);
 			sourceBytesLeftovers = bytesInSourceBuffer - sourceBytesConverted;
-			if(sourceBytesLeftovers > 0)
+			if (sourceBytesLeftovers > 0)
 			{
 				Array.Copy(conversionStream.SourceBuffer, sourceBytesConverted, conversionStream.SourceBuffer, 0, sourceBytesLeftovers);
 			}
@@ -62,12 +61,12 @@ namespace audioStreamFinal
 
 		public void Dispose()
 		{
-			if(encodeStream != null)
+			if (encodeStream != null)
 			{
 				encodeStream.Dispose();
 				encodeStream = null;
 			}
-			if(decodeStream != null)
+			if (decodeStream != null)
 			{
 				decodeStream.Dispose();
 				decodeStream = null;
@@ -85,7 +84,7 @@ namespace audioStreamFinal
 					using (new AcmStream(RecordFormat, encodeFormat)) { }
 					using (new AcmStream(encodeFormat, RecordFormat)) { }
 				}
-				catch(MmException)
+				catch (MmException)
 				{
 					available = false;
 				}

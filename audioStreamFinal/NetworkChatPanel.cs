@@ -1,13 +1,12 @@
-﻿using System;
+﻿using NAudio.Wave;
+using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Net;
-using NAudio.Wave;
-using System.Globalization;
-using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace audioStreamFinal
 {
@@ -136,7 +135,7 @@ namespace audioStreamFinal
 				Console.WriteLine("Enter the name of the protocol you want to use\n" +
 					"'UDP' or 'TCP'? ");
 				value = Console.ReadLine();
-			} while (value.ToLower()!="udp" && value.ToLower() != "tcp");
+			} while (value.ToLower() != "udp" && value.ToLower() != "tcp");
 			isUDP = value.ToLower() == "udp";
 		}
 		private void isIPOk()
@@ -333,7 +332,7 @@ namespace audioStreamFinal
 			{
 				Console.WriteLine("please enter a Natural number value from 0 to 10");
 				value = Console.ReadLine();
-			} while (!(int.TryParse(value, out audioValue) && audioValue >= 0 && audioValue<=10));
+			} while (!(int.TryParse(value, out audioValue) && audioValue >= 0 && audioValue <= 10));
 
 			int newVolume = ((ushort.MaxValue / 10) * audioValue);
 			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
