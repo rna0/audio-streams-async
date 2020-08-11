@@ -56,7 +56,7 @@ namespace audioStreamFinal
 				Console.WriteLine("enter a single character");
 				try_input = Console.ReadLine();
 			} while (try_input.Length != 1);
-			return char.Parse(try_input);
+			return Char.ToLower(char.Parse(try_input));
 
 		}
 		public void consoleUserInterface()
@@ -72,6 +72,8 @@ namespace audioStreamFinal
 					"I - Choose IP to connect\n" +
 					"O - Connect to original IP\n" +
 					"P - Choose Port to connect\n" +
+					"V - Change audio volume\n" +
+					"U - Choose transmission protocol\n" +
 					"S - Start\n" +
 					"D - Disconnect\n" +
 					"E - Exit");
@@ -79,44 +81,44 @@ namespace audioStreamFinal
 				input = inputCharOnly();
 				switch (input)
 				{
-					case 'R':
 					case 'r':
 						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
 						printSources();
 						break;
-					case 'C':
 					case 'c':
 						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
 						ChoosePrintSources();
 						break;
-					case 'I':
 					case 'i':
 						isIPOk();
 						Console.WriteLine("\n# " + ipAddr + " is your current IP.");
 						break;
-					case 'O':
 					case 'o':
 						ipAddr = GetLocalIPAddress();
 						Console.WriteLine("\n# " + ipAddr + " is your current IP.");
 						break;
-					case 'P':
 					case 'p':
 						Console.WriteLine("\n# " + textPort + " is your current Port.");
 						isPortOk();
 						break;
-					case 'S':
+					case 'v':
+						outputVolumeControl();
+						Console.WriteLine("\n# " + audioValue + " is your current Audio volume.");
+						break;
+					case 'u':
+						ChooseProtocol();
+						Console.WriteLine("\n# {0} is your current Audio volume.", isUDP ? "UDP" : "TCP");
+						break;
 					case 's':
-						StartStreamingAsync();
+						StartStreaming();
 						Console.WriteLine("-Connected");
 						break;
-					case 'D':
 					case 'd':
-						DisconnectAsync();
+						Disconnect();
 						Console.WriteLine("-Disconnected");
 						break;
-					case 'E':
 					case 'e':
-						DisconnectAsync();
+						Disconnect();
 						Environment.Exit(0);
 						break;
 					default:
@@ -125,6 +127,18 @@ namespace audioStreamFinal
 				}
 			} while (true);
 		}
+
+		private void ChooseProtocol()
+		{
+			string value;
+			do
+			{
+				Console.WriteLine("Enter the name of the protocol you want to use\n" +
+					"'UDP' or 'TCP'? ");
+				value = Console.ReadLine();
+			} while (value.ToLower()!="udp" && value.ToLower() != "tcp");
+			isUDP = value.ToLower() == "udp";
+		}
 		private void isIPOk()
 		{
 			bool IpOk;
@@ -132,7 +146,7 @@ namespace audioStreamFinal
 			string[] splitValues;
 			do
 			{
-				Console.WriteLine("please enter a valid IP: ");
+				Console.WriteLine("Please enter a valid IP: ");
 				ipAddr = Console.ReadLine();
 				if (String.IsNullOrWhiteSpace(ipAddr))
 				{
@@ -156,7 +170,7 @@ namespace audioStreamFinal
 		{
 			do
 			{
-				Console.WriteLine("please provide an alternative Port:");
+				Console.WriteLine("Please provide an alternative Port:");
 				textPort = Console.ReadLine();
 				if (textPort == "")
 				{
@@ -259,14 +273,14 @@ namespace audioStreamFinal
 			}
 		}
 
-		private async Task StartStreamingAsync()
+		private void StartStreaming()
 		{
 			try
 			{
 				IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
 				int inputDeviceNumber = comboBoxCodecsIndex;
 				selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-				await ConnectAsync(isUDP, endPoint, inputDeviceNumber, selectedCodec);
+				Connect(isUDP, endPoint, inputDeviceNumber, selectedCodec);
 			}
 			catch (Exception e)
 			{
@@ -277,7 +291,7 @@ namespace audioStreamFinal
 				Console.WriteLine("\n**remember, Please provide correct IP address**");
 			}
 		}
-		private async Task ConnectAsync(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
+		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
 		{
 			var receiver = (isUDP)
 				? (IAudioReceiver)new UdpAudioReceiver(endPoint.Port)
@@ -291,7 +305,7 @@ namespace audioStreamFinal
 			connected = true;
 		}
 
-		private async Task DisconnectAsync()
+		private void Disconnect()
 		{
 			if (connected)
 			{
@@ -314,6 +328,13 @@ namespace audioStreamFinal
 		private void outputVolumeControl()
 		{
 			//Main audio output volume control
+			string value;
+			do
+			{
+				Console.WriteLine("please enter a Natural number value from 0 to 10");
+				value = Console.ReadLine();
+			} while (!(int.TryParse(value, out audioValue) && audioValue >= 0 && audioValue<=10));
+
 			int newVolume = ((ushort.MaxValue / 10) * audioValue);
 			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
 			waveOutSetVolume(IntPtr.Zero, NewVolumeAllChannels);
