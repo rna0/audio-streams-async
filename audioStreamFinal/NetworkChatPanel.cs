@@ -10,7 +10,9 @@ using System.Runtime.InteropServices;
 
 namespace audioStreamFinal
 {
-
+	/// <summary>
+	/// uses a nice console app interface with supporting functions for commands
+	/// </summary>
 	public class NetworkChatPanel
 	{
 		private INetworkChatCodec selectedCodec;
@@ -204,10 +206,11 @@ namespace audioStreamFinal
 				Console.WriteLine(item.Text);
 			}
 		}
+		/// <summary>
+		/// see the full speakers list and then choose which one to use
+		/// </summary>
 		private void ChoosePrintSources()
 		{
-			//**see the full speakers list**
-			//**and then choose which one to use**
 			if (comboBoxCodecs.Count == 0)
 			{
 				Console.WriteLine("No MIC source found");
