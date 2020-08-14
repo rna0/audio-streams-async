@@ -15,16 +15,45 @@ namespace audioStreamFinal
 	/// </summary>
 	public class NetworkChatPanel
 	{
+		/// <summary>
+		/// An object type which contains the Naudio WaveFormat and detailes about the wave
+		/// </summary>
 		private INetworkChatCodec selectedCodec;
+		/// <summary>
+		/// A boolean type which sets to true when a connection is made to make sure That no duplicates will be created
+		/// </summary>
 		private volatile bool connected = false;
+		/// <summary>
+		/// An object type which recieves the stream with Naudio IAudioReceiver, saves on the BufferedWaveProvider and plays with the IWavePlayer.
+		/// </summary>
 		private NetworkAudioPlayer player;
+		/// <summary>
+		/// An object type which recieves the stream with Naudio IAudioSender and records audio from WaveInEvent (notice that waveIn type doen't work on consoleApp)
+		/// </summary>
 		private NetworkAudioSender audioSender;
+		/// <summary>
+		/// List of all devices marked as Microphones connected.
+		/// </summary>
 		private List<CodecComboItem> comboBoxCodecs = new List<CodecComboItem>();
-		private List<string> comboBoxInputDevices = new List<string>();
+		/// <summary>
+		/// comboBoxCodecsIndex saves the number in the list of available microphones to be used and is read in the next connection attempt
+		/// </summary>
 		private int comboBoxCodecsIndex = 0;
+		/// <summary>
+		/// A boolean type which sets to true when the connection is set to be used with the udp protocol and TCP otherwise
+		/// </summary>
 		private bool isUDP = true;
+		/// <summary>
+		/// contains the IP in string format to be sent to the client side
+		/// </summary>
 		string ipAddr = GetLocalIPAddress();
+		/// <summary>
+		/// contains the Port in string format to be sent to the client side
+		/// </summary>
 		string textPort = "8192";
+		/// <summary>
+		/// An integer which represents volume value from 1 up to 10
+		/// </summary>
 		int audioValue = 10;
 
 		[DllImport("winmm.dll")]
@@ -38,7 +67,6 @@ namespace audioStreamFinal
 			// Use reflection to find all the codecs
 			var codecs = ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>();
 
-			PopulateInputDevicesCombo();
 			PopulateCodecsCombo(codecs);
 
 			uint CurrVol = 0;
@@ -224,7 +252,7 @@ namespace audioStreamFinal
 
 			Int32.TryParse(Console.ReadLine(), out comboBoxCodecsIndex);
 			--comboBoxCodecsIndex;
-			if (comboBoxCodecsIndex > 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
+			if (comboBoxCodecsIndex >= 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
 			{
 				Console.WriteLine("Device " + comboBoxCodecsIndex + 1 + " selected successfully.");
 			}
@@ -260,18 +288,6 @@ namespace audioStreamFinal
 			}
 		}
 
-		private void PopulateInputDevicesCombo()
-		{
-			for (int n = 0; n < WaveIn.DeviceCount; n++)
-			{
-				var capabilities = WaveIn.GetCapabilities(n);
-				comboBoxInputDevices.Add(capabilities.ProductName);
-			}
-			if (comboBoxInputDevices.Count > 0)
-			{
-				comboBoxCodecsIndex = 0;
-			}
-		}
 
 		private void StartStreaming()
 		{
@@ -282,7 +298,7 @@ namespace audioStreamFinal
 					IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
 					int inputDeviceNumber = comboBoxCodecsIndex;
 					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-					Connect(isUDP, endPoint, inputDeviceNumber, selectedCodec);
+					Connect(isUDP, endPoint, inputDeviceNumber);
 				}
 				catch (Exception e)
 				{
@@ -294,7 +310,7 @@ namespace audioStreamFinal
 				}
 			}
 		}
-		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)
+		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber)
 		{
 			var receiver = (isUDP)
 				? (IAudioReceiver)new UdpAudioReceiver(endPoint.Port)
@@ -303,8 +319,8 @@ namespace audioStreamFinal
 				? (IAudioSender)new UdpAudioSender(endPoint)
 				: new TcpAudioSender(endPoint);
 
-			player = new NetworkAudioPlayer(codec, receiver);
-			audioSender = new NetworkAudioSender(codec, inputDeviceNumber, sender);
+			player = new NetworkAudioPlayer(selectedCodec, receiver);
+			audioSender = new NetworkAudioSender(selectedCodec, inputDeviceNumber, sender);
 			connected = true;
 		}
 
