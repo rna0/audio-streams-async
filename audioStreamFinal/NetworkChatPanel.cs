@@ -16,7 +16,7 @@ namespace audioStreamFinal
 	public class NetworkChatPanel
 	{
 		private INetworkChatCodec selectedCodec;
-		private volatile bool connected;
+		private volatile bool connected = false;
 		private NetworkAudioPlayer player;
 		private NetworkAudioSender audioSender;
 		private List<CodecComboItem> comboBoxCodecs = new List<CodecComboItem>();
@@ -26,8 +26,6 @@ namespace audioStreamFinal
 		string ipAddr = GetLocalIPAddress();
 		string textPort = "8192";
 		int audioValue = 10;
-
-		public static int inputSens;
 
 		[DllImport("winmm.dll")]
 		public static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
@@ -277,20 +275,23 @@ namespace audioStreamFinal
 
 		private void StartStreaming()
 		{
-			try
+			if (!connected)
 			{
-				IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
-				int inputDeviceNumber = comboBoxCodecsIndex;
-				selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-				Connect(isUDP, endPoint, inputDeviceNumber, selectedCodec);
-			}
-			catch (Exception e)
-			{
-				if (e is NAudio.MmException)
-					Console.WriteLine("No microphones are connected");
-				else
-					Console.WriteLine(e);
-				Console.WriteLine("\n**remember, Please provide correct IP address**");
+				try
+				{
+					IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
+					int inputDeviceNumber = comboBoxCodecsIndex;
+					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
+					Connect(isUDP, endPoint, inputDeviceNumber, selectedCodec);
+				}
+				catch (Exception e)
+				{
+					if (e is NAudio.MmException)
+						Console.WriteLine("No microphones are connected");
+					else
+						Console.WriteLine(e);
+					Console.WriteLine("\n**remember, Please provide correct IP address**");
+				}
 			}
 		}
 		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber, INetworkChatCodec codec)

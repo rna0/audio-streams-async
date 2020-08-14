@@ -55,12 +55,9 @@ namespace audioStreamFinal
 
 			//Microphone input sensitivty, controlled via scroll bar
 			//500ms buffer using timer to stop choppy audio output
-			if (inputVol > NetworkChatPanel.inputSens)
-			{
-				inputBuffer.Enabled = true;
-				inputBuffer.Tick += new EventHandler(BufferTimeout);
+			inputBuffer.Enabled = true;
+			inputBuffer.Tick += new EventHandler(BufferTimeout);
 
-			}
 			if (inputBuffer.Enabled)
 			{
 				byte[] encoded = codec.Encode(e.Buffer, 0, e.BytesRecorded);
