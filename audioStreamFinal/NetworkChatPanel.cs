@@ -1,5 +1,4 @@
-﻿using NAudio.Wave;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -46,7 +45,7 @@ namespace audioStreamFinal
 		/// <summary>
 		/// contains the IP in string format to be sent to the client side
 		/// </summary>
-		string ipAddr = GetLocalIPAddress();
+		string ipAddr;
 		/// <summary>
 		/// contains the Port in string format to be sent to the client side
 		/// </summary>
@@ -55,15 +54,6 @@ namespace audioStreamFinal
 		/// An integer which represents volume value from 1 up to 10
 		/// </summary>
 		int audioValue = 10;
-
-		/// <summary>
-		/// Get the current volume from computer
-		/// </summary>
-		/// <param name="hwo"></param>
-		/// <param name="dwVolume"></param>
-		/// <returns></returns>
-		[DllImport("winmm.dll")]
-		public static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
 		/// <summary>
 		/// Set the current volume on computer
 		/// </summary>
@@ -72,32 +62,24 @@ namespace audioStreamFinal
 		/// <returns></returns>
 		[DllImport("winmm.dll")]
 		public static extern int waveOutSetVolume(IntPtr hwo, uint dwVolume);
-
+		/// <summary>
+		/// Get a list of codecs of microphones and call user input 
+		/// </summary>
 		public NetworkChatPanel()
 		{
+			ipAddr = GetLocalIPAddress();
+			Console.WriteLine("Next connection detailes: {0}:{1}\n" +
+				"also these are the default IP adress and Port", ipAddr, textPort);
 			// Use reflection to find all the codecs and populate the codec list with them
-			PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
-			// Get original (current) system volume
-			uint CurrVol = 0;
-			waveOutGetVolume(IntPtr.Zero, out CurrVol);
-			ushort CalcVol = (ushort)(CurrVol & 0x0000FFFF);
+			PopulateCodecsCombo();
 
 			consoleUserInterface();
 		}
-		private char inputCharOnly()
-		{
-			string try_input;
-			do
-			{
-				Console.WriteLine("enter a single character");
-				try_input = Console.ReadLine();
-			} while (try_input.Length != 1);
-			return Char.ToLower(char.Parse(try_input));
-
-		}
+		/// <summary>
+		/// Get a single char from the client and manage the conversasion between audio streaming functions and the User
+		/// </summary>
 		public void consoleUserInterface()
 		{
-
 			char input;
 			do
 			{
@@ -105,7 +87,7 @@ namespace audioStreamFinal
 				Console.WriteLine("\nR - Refresh sources\n" +
 					"C - Choose source microphone\n" +
 					"I - Choose IP to connect\n" +
-					"O - Connect to original IP\n" +
+					"O - revert to original IP and port\n" +
 					"P - Choose Port to connect\n" +
 					"V - Change audio volume\n" +
 					"U - Choose transmission protocol\n" +
@@ -117,24 +99,26 @@ namespace audioStreamFinal
 				switch (input)
 				{
 					case 'r':
-						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
+						PopulateCodecsCombo();
 						printSources();
 						break;
 					case 'c':
-						PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
+						PopulateCodecsCombo();
 						ChoosePrintSources();
 						break;
 					case 'i':
 						isIPOk();
-						Console.WriteLine("\n# " + ipAddr + " is your current IP.");
+						Console.WriteLine("\n# {0}:{1} is your current Connection parameters.", ipAddr, textPort);
 						break;
 					case 'o':
 						ipAddr = GetLocalIPAddress();
-						Console.WriteLine("\n# " + ipAddr + " is your current IP.");
+						textPort = "8192";
+						Console.WriteLine("\n# {0}:{1} is your current Connection parameters.", ipAddr, textPort);
 						break;
 					case 'p':
 						Console.WriteLine("\n# " + textPort + " is your current Port.");
 						isPortOk();
+						Console.WriteLine("\n# {0}:{1} is your current Connection parameters.", ipAddr, textPort);
 						break;
 					case 'v':
 						outputVolumeControl();
@@ -154,15 +138,31 @@ namespace audioStreamFinal
 						break;
 					case 'e':
 						Disconnect();
-						Environment.Exit(0);
 						break;
 					default:
 						Console.WriteLine("None of the above were selected");
 						break;
 				}
-			} while (true);
+			} while (input!='e');
 		}
+		/// <summary>
+		/// Get a single character from user and ask again if needed
+		/// </summary>
+		/// <returns>A lowercase user input</returns>
+		private char inputCharOnly()
+		{
+			string try_input;
+			do
+			{
+				Console.WriteLine("enter a single character: ");
+				try_input = Console.ReadLine();
+			} while (try_input.Length != 1);
+			return Char.ToLower(char.Parse(try_input));
 
+		}
+		/// <summary>
+		/// user inputs 'UDP' or 'TCP' and the boolean isUDP changes accordingly 
+		/// </summary>
 		private void ChooseProtocol()
 		{
 			string value;
@@ -170,10 +170,13 @@ namespace audioStreamFinal
 			{
 				Console.WriteLine("Enter the name of the protocol you want to use\n" +
 					"'UDP' or 'TCP'? ");
-				value = Console.ReadLine();
-			} while (value.ToLower() != "udp" && value.ToLower() != "tcp");
-			isUDP = value.ToLower() == "udp";
+				value = Console.ReadLine().ToLower();
+			} while (value != "udp" && value != "tcp");
+			isUDP = value == "udp";
 		}
+		/// <summary>
+		/// makes sure the String ipAddr is Valid: only numbers and 3 dots between up to 3 digits eatch.
+		/// </summary>
 		private void isIPOk()
 		{
 			bool IpOk;
@@ -201,35 +204,38 @@ namespace audioStreamFinal
 			} while (!IpOk);
 			Console.WriteLine(ipAddr + " Changed successfully");
 		}
+		/// <summary>
+		/// makes sure the String textPort gets user input in the valid range of ports available.
+		/// </summary>
 		private void isPortOk()
 		{
-			do
+			Console.WriteLine("Please provide an alternative Port:");
+			textPort = Console.ReadLine();
+			if (textPort == "")
 			{
-				Console.WriteLine("Please provide an alternative Port:");
-				textPort = Console.ReadLine();
-				if (textPort == "")
+				Console.WriteLine("**Please provide correct port**");
+				textPort = "8192";
+			}
+			else
+			{
+				int port;
+				int.TryParse(textPort, out port);
+				if (port == 0 || port >= 47823)
 				{
-					Console.WriteLine("**Please provide correct port**");
-					textPort = "8192";
+					Console.WriteLine("** Your input was submitted as: " + port + "\t**\n" +
+						"** Which is Bigger than 47823 or zero,\t**\n" +
+						"** Input made by default to 47823\t**");
+					port = 47823;
+					textPort = "47823";
 				}
-				else
-				{
-					int port;
-					int.TryParse(textPort, out port);
-					if (port == 0 || port > 47823)
-					{
-						Console.WriteLine("** " + port + "is Bigger than 47823 or zero, made by default to 47823**");
-						port = 47823;
-						textPort = "47823";
-					}
-				}
-
-			} while (textPort == "" && Int32.Parse(textPort) > 47823);
+			}
 			Console.WriteLine(textPort + " Changed successfully");
 		}
+		/// <summary>
+		///  see the full speakers list
+		/// </summary>
 		private void printSources()
 		{
-			//**see the full speakers list**
 			if (comboBoxCodecs.Count == 0)
 			{
 				Console.WriteLine("No MIC source found");
@@ -270,8 +276,12 @@ namespace audioStreamFinal
 				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + 1 + ", is first one By Default");
 			}
 		}
-		private void PopulateCodecsCombo(IEnumerable<INetworkChatCodec> codecs)
+		/// <summary>
+		/// Add Connected Microphones detailes and Codecs 
+		/// </summary>
+		private void PopulateCodecsCombo()
 		{
+			IEnumerable<INetworkChatCodec> codecs = ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>();
 			comboBoxCodecs.Clear();
 			var sorted = from codec in codecs
 						 where codec.IsAvailable
@@ -285,7 +295,9 @@ namespace audioStreamFinal
 				comboBoxCodecs.Add(new CodecComboItem { Text = text, Codec = codec });
 			}
 		}
-
+		/// <summary>
+		/// Basic Data saved on every connected microphone
+		/// </summary>
 		class CodecComboItem
 		{
 			public string Text { get; set; }
@@ -295,8 +307,9 @@ namespace audioStreamFinal
 				return Text;
 			}
 		}
-
-
+		/// <summary>
+		/// endsure everything for connection and catch if connection failes
+		/// </summary>
 		private void StartStreaming()
 		{
 			if (!connected)
@@ -318,6 +331,12 @@ namespace audioStreamFinal
 				}
 			}
 		}
+		/// <summary>
+		/// create sender and reciever and connect to IP:Port with selected protocol
+		/// </summary>
+		/// <param name="isUDP"></param>
+		/// <param name="endPoint"></param>
+		/// <param name="inputDeviceNumber"></param>
 		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber)
 		{
 			var receiver = (isUDP)
@@ -331,7 +350,9 @@ namespace audioStreamFinal
 			audioSender = new NetworkAudioSender(selectedCodec, inputDeviceNumber, sender);
 			connected = true;
 		}
-
+		/// <summary>
+		/// Dispose everything connection related
+		/// </summary>
 		private void Disconnect()
 		{
 			if (connected)
@@ -344,14 +365,18 @@ namespace audioStreamFinal
 				saveIpPort();
 			}
 		}
-
+		/// <summary>
+		/// save ip and port for further connections, useful after closer of last thread *********not done.
+		/// </summary>
 		private void saveIpPort()
 		{
 			Properties.Settings.Default.IP = ipAddr;
 			Properties.Settings.Default.Port = textPort;
 			Properties.Settings.Default.Save();
 		}
-
+		/// <summary>
+		/// Get value for volume output and adjust volume accordingly
+		/// </summary>
 		private void outputVolumeControl()
 		{
 			//Main audio output volume control
@@ -366,8 +391,12 @@ namespace audioStreamFinal
 			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
 			waveOutSetVolume(IntPtr.Zero, NewVolumeAllChannels);
 		}
-
-		public static IPEndPoint CreateIPEndPoint(string endPoint)
+		/// <summary>
+		/// try creating IPEndPoint object from IP:port string
+		/// </summary>
+		/// <param name="endPoint"></param>
+		/// <returns>IPEndPoint connection detailes for streaming</returns>
+		private IPEndPoint CreateIPEndPoint(string endPoint)
 		{
 			string[] ep = endPoint.Split(':');
 			if (ep.Length < 2) throw new FormatException("Invalid endpoint format");
@@ -393,14 +422,17 @@ namespace audioStreamFinal
 			}
 			return new IPEndPoint(ip, port);
 		}
-		public static string GetLocalIPAddress()
+		/// <summary>
+		/// Get IP of console pc for loopback connection by default
+		/// </summary>
+		/// <returns>local ip address in string format</returns>
+		private string GetLocalIPAddress()
 		{
 			var host = Dns.GetHostEntry(Dns.GetHostName());
 			foreach (var ip in host.AddressList)
 			{
 				if (ip.AddressFamily == AddressFamily.InterNetwork)
 				{
-					Console.WriteLine("your IP: " + ip.ToString() + "\nalso this is the default delected IP adress");
 					return ip.ToString();
 				}
 			}

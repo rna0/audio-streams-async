@@ -8,7 +8,6 @@ namespace audioStreamFinal
 		static void Main()
 		{
 			new NetworkChatPanel();
-			Console.ReadLine();
 		}
 	}
 }
