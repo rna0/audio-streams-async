@@ -56,19 +56,28 @@ namespace audioStreamFinal
 		/// </summary>
 		int audioValue = 10;
 
+		/// <summary>
+		/// Get the current volume from computer
+		/// </summary>
+		/// <param name="hwo"></param>
+		/// <param name="dwVolume"></param>
+		/// <returns></returns>
 		[DllImport("winmm.dll")]
 		public static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
-
+		/// <summary>
+		/// Set the current volume on computer
+		/// </summary>
+		/// <param name="hwo"></param>
+		/// <param name="dwVolume"></param>
+		/// <returns></returns>
 		[DllImport("winmm.dll")]
 		public static extern int waveOutSetVolume(IntPtr hwo, uint dwVolume);
 
 		public NetworkChatPanel()
 		{
-			// Use reflection to find all the codecs
-			var codecs = ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>();
-
-			PopulateCodecsCombo(codecs);
-
+			// Use reflection to find all the codecs and populate the codec list with them
+			PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
+			// Get original (current) system volume
 			uint CurrVol = 0;
 			waveOutGetVolume(IntPtr.Zero, out CurrVol);
 			ushort CalcVol = (ushort)(CurrVol & 0x0000FFFF);
@@ -89,7 +98,6 @@ namespace audioStreamFinal
 		public void consoleUserInterface()
 		{
 
-			PopulateCodecsCombo(ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>());
 			char input;
 			do
 			{
