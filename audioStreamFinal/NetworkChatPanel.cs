@@ -37,7 +37,7 @@ namespace audioStreamFinal
 		/// <summary>
 		/// comboBoxCodecsIndex saves the number in the list of available microphones to be used and is read in the next connection attempt
 		/// </summary>
-		private int comboBoxCodecsIndex = 0;
+		private int comboBoxCodecsIndex = MyConst.defaultComboBoxCodecsIndex;
 		/// <summary>
 		/// A boolean type which sets to true when the connection is set to be used with the udp protocol and TCP otherwise
 		/// </summary>
@@ -49,11 +49,11 @@ namespace audioStreamFinal
 		/// <summary>
 		/// contains the Port in string format to be sent to the client side
 		/// </summary>
-		string textPort = "8192";
+		string textPort = MyConst.defaultPort.ToString();
 		/// <summary>
 		/// An integer which represents volume value from 1 up to 10
 		/// </summary>
-		int audioValue = 10;
+		int audioValue = MyConst.maxVolume;
 		/// <summary>
 		/// Set the current volume on computer
 		/// </summary>
@@ -193,7 +193,7 @@ namespace audioStreamFinal
 				else
 				{
 					splitValues = ipAddr.Split('.');
-					if (splitValues.Length != 4)
+					if (splitValues.Length != MyConst.ipV4Len)
 					{
 						IpOk = false;
 					}
@@ -213,20 +213,21 @@ namespace audioStreamFinal
 			textPort = Console.ReadLine();
 			if (textPort == "")
 			{
-				Console.WriteLine("**Please provide correct port**");
-				textPort = "8192";
+				Console.WriteLine("**Please provide correct port next time, changed to default**");
+				textPort = MyConst.defaultPort.ToString() ;
 			}
 			else
 			{
 				int port;
 				int.TryParse(textPort, out port);
-				if (port == 0 || port >= 47823)
+				if (port == 0 || port >= MyConst.maxPort)
 				{
-					Console.WriteLine("** Your input was submitted as: " + port + "\t**\n" +
-						"** Which is Bigger than 47823 or zero,\t**\n" +
-						"** Input made by default to 47823\t**");
-					port = 47823;
-					textPort = "47823";
+					Console.WriteLine("** Your input was submitted as: {0}\t**\n" +
+						"** Which is Bigger than {1} or Zero\t**\n" +
+						"** or containes a Non-Number character,\t**\n" +
+						"** Input made by default to {1}\t**", port, MyConst.maxPort);
+					port = MyConst.maxPort;
+					textPort = port.ToString();
 				}
 			}
 			Console.WriteLine(textPort + " Changed successfully");
@@ -265,16 +266,17 @@ namespace audioStreamFinal
 
 
 			Int32.TryParse(Console.ReadLine(), out comboBoxCodecsIndex);
-			--comboBoxCodecsIndex;
-			if (comboBoxCodecsIndex >= 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
+			//check in range
+			if (comboBoxCodecsIndex > 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
 			{
-				Console.WriteLine("Device " + comboBoxCodecsIndex + 1 + " selected successfully.");
+				Console.WriteLine("Device " + comboBoxCodecsIndex + " selected successfully.");
 			}
 			else
 			{
-				comboBoxCodecsIndex = 0;
-				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + 1 + ", is first one By Default");
+				comboBoxCodecsIndex = MyConst.defaultComboBoxCodecsIndex;
+				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + ", is chosen one By Default");
 			}
+			--comboBoxCodecsIndex;
 		}
 		/// <summary>
 		/// Add Connected Microphones detailes and Codecs 
@@ -290,7 +292,7 @@ namespace audioStreamFinal
 
 			foreach (var codec in sorted)
 			{
-				var bitRate = codec.BitsPerSecond == -1 ? "VBR" : $"{codec.BitsPerSecond / 1000.0:0.#}kbps";
+				var bitRate = codec.BitsPerSecond == -1 ? "VBR" : $"{codec.BitsPerSecond / MyConst.kilo:0.#}kbps";
 				var text = $"{codec.Name} ({bitRate})";
 				comboBoxCodecs.Add(new CodecComboItem { Text = text, Codec = codec });
 			}
@@ -385,10 +387,10 @@ namespace audioStreamFinal
 			{
 				Console.WriteLine("please enter a Natural number value from 0 to 10");
 				value = Console.ReadLine();
-			} while (!(int.TryParse(value, out audioValue) && audioValue >= 0 && audioValue <= 10));
+			} while (!(int.TryParse(value, out audioValue) && audioValue >= MyConst.minVolume && audioValue <= MyConst.maxVolume));
 
-			int newVolume = ((ushort.MaxValue / 10) * audioValue);
-			uint NewVolumeAllChannels = (((uint)newVolume & 0x0000ffff) | ((uint)newVolume << 16));
+			int newVolume = ((ushort.MaxValue / MyConst.maxVolume) * audioValue);
+			uint NewVolumeAllChannels = (((uint)newVolume & MyConst.volumeOffset) | ((uint)newVolume << MyConst.pushVolumeOffset));
 			waveOutSetVolume(IntPtr.Zero, NewVolumeAllChannels);
 		}
 		/// <summary>
@@ -438,5 +440,23 @@ namespace audioStreamFinal
 			}
 			throw new Exception("No network adapters with an IPv4 address in the system!");
 		}
+	}
+	class MyConst
+	{
+		//constants from isIPOk()
+		public const int ipV4Len = 4;
+		//constants from isPortOk()
+		public const int defaultPort = 8192;
+		public const int maxPort = 47823;
+		//constants from ChoosePrintSources()
+		public const int defaultComboBoxCodecsIndex = 0;
+		//constants from PopulateCodecsCombo()
+		public const double kilo = 1000.0;
+		//constants from outputVolumeControl()
+		public const int maxVolume = 10;
+		public const int minVolume = 0;
+		public const int volumeOffset = 0x0000ffff;
+		public const int pushVolumeOffset = 16;
+
 	}
 }
