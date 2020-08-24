@@ -130,11 +130,9 @@ namespace audioStreamFinal
 						break;
 					case 's':
 						StartStreaming();
-						Console.WriteLine("-Connected");
 						break;
 					case 'd':
 						Disconnect();
-						Console.WriteLine("-Disconnected");
 						break;
 					case 'e':
 						Disconnect();
@@ -322,14 +320,14 @@ namespace audioStreamFinal
 					int inputDeviceNumber = comboBoxCodecsIndex;
 					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
 					Connect(isUDP, endPoint, inputDeviceNumber);
+					Console.WriteLine("-Connected");
 				}
 				catch (Exception e)
 				{
-					if (e is NAudio.MmException)
-						Console.WriteLine("No microphones are connected");
+					if (e is NAudio.MmException) Console.WriteLine("No microphones are connected, STILL CONNECTED FOR LIISTENING!!!");
 					else
 						Console.WriteLine(e);
-					Console.WriteLine("\n**remember, Please provide correct IP address**");
+						Console.WriteLine("\n**remember to Listen on the correct IP address**");
 				}
 			}
 		}
@@ -365,6 +363,7 @@ namespace audioStreamFinal
 				audioSender.Dispose();
 				selectedCodec.Dispose();
 				saveIpPort();
+				Console.WriteLine("-Disconnected");
 			}
 		}
 		/// <summary>
