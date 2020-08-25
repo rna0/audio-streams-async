@@ -2,7 +2,7 @@
 using NAudio.Wave;
 using System;
 
-namespace audioStreamFinal.BareMetal
+namespace audioStreamFinal.CompressionType
 {
 	class ALaw : AcmChatCodec
 	{

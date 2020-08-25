@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using NAudio.Wave;
 
 namespace audioStreamFinal
 {
@@ -24,9 +25,11 @@ namespace audioStreamFinal
 			//constants from isPortOk()
 			public const int defaultPort = 8192;
 			public const int maxPort = 47823;
-			//constants from ChoosePrintSources()
-			public const int defaultComboBoxCodecsIndex = 0;
-			//constants from PopulateCodecsCombo()
+			//constants from ChooseInputDevicesSource()
+			public const int defaultInputDevicesIndex = 0;
+			//constants from ChooseCodecSource()
+			public const int defaultCodecsIndex = 0;
+			//constants from PopulateCodecs()
 			public const double kilo = 1000.0;
 			//constants from outputVolumeControl()
 			public const int maxVolume = 10;
@@ -54,11 +57,13 @@ namespace audioStreamFinal
 		/// <summary>
 		/// List of all devices marked as Microphones connected.
 		/// </summary>
-		private List<CodecComboItem> comboBoxCodecs;
+		private List<string> InputDevices;
+		private List<CodecItem> Codecs;
 		/// <summary>
-		/// comboBoxCodecsIndex saves the number in the list of available microphones to be used and is read in the next connection attempt
+		/// CodecsIndex saves the number in the list of available microphones to be used and is read in the next connection attempt
 		/// </summary>
-		private int comboBoxCodecsIndex;
+		private int InputDevicesIndex;
+		private int CodecsIndex;
 		/// <summary>
 		/// A boolean type which sets to true when the connection is set to be used with the udp protocol and TCP otherwise
 		/// </summary>
@@ -90,8 +95,10 @@ namespace audioStreamFinal
 		{
 			//defining variables
 			connected = false;
-			comboBoxCodecs = new List<CodecComboItem>();
-			comboBoxCodecsIndex = MyConst.defaultComboBoxCodecsIndex;
+			InputDevices= new List<string>();
+			Codecs = new List<CodecItem>();
+			InputDevicesIndex = MyConst.defaultInputDevicesIndex;
+			CodecsIndex = MyConst.defaultCodecsIndex;
 			isUDP = true;
 			ipAddr = GetLocalIPAddress();
 			textPort = MyConst.defaultPort.ToString();
@@ -100,7 +107,8 @@ namespace audioStreamFinal
 			Console.WriteLine("Next connection detailes: {0}:{1}\n" +
 				"also these are the default IP adress and Port", ipAddr, textPort);
 			// Use reflection to find all the codecs and populate the codec list with them
-			PopulateCodecsCombo();
+			PopulateInputDevices();
+			PopulateCodecs();
 
 			consoleUserInterface();
 		}
@@ -115,6 +123,7 @@ namespace audioStreamFinal
 
 				Console.WriteLine("\nR - Refresh sources\n" +
 					"C - Choose source microphone\n" +
+					"K - Choose Compression Type\n" +
 					"I - Choose IP to connect\n" +
 					"O - revert to original IP and port\n" +
 					"P - Choose Port to connect\n" +
@@ -128,12 +137,13 @@ namespace audioStreamFinal
 				switch (input)
 				{
 					case 'r':
-						PopulateCodecsCombo();
-						printSources();
+						printInputDevices();
 						break;
 					case 'c':
-						PopulateCodecsCombo();
-						ChoosePrintSources();
+						ChooseInputDevicesSource();
+						break;
+					case 'k':
+						ChooseCodecSource();
 						break;
 					case 'i':
 						isIPOk();
@@ -262,56 +272,98 @@ namespace audioStreamFinal
 		/// <summary>
 		///  see the full speakers list
 		/// </summary>
-		private void printSources()
+		private void printInputDevices()
 		{
-			if (comboBoxCodecs.Count == 0)
+			if (InputDevices.Count == 0)
 			{
 				Console.WriteLine("No MIC source found");
 				return;
 			}
-			foreach (CodecComboItem item in comboBoxCodecs)
+			for (int i = 0; i < InputDevices.Count; i++)
 			{
-				Console.WriteLine(item.Text);
+				Console.WriteLine("{0}. {1}", (i + 1) , InputDevices[i]);
 			}
 		}
 		/// <summary>
-		/// see the full speakers list and then choose which one to use
+		/// call printInputDevices() and then choose which Mic to use
 		/// </summary>
-		private void ChoosePrintSources()
+		private void ChooseInputDevicesSource()
 		{
-			if (comboBoxCodecs.Count == 0)
-			{
-				Console.WriteLine("No MIC source found");
-				return;
-			}
+
 			Console.WriteLine("These are the possible sources:");
-			for (int i = 0; i < comboBoxCodecs.Count; i++)
-			{
-				Console.WriteLine((i + 1) + ". " + comboBoxCodecs[i].Text.ToString());
-			}
+			printInputDevices();
 			Console.WriteLine("\nType in the number in the according line: ");
-
-
-			Int32.TryParse(Console.ReadLine(), out comboBoxCodecsIndex);
+			Int32.TryParse(Console.ReadLine(), out InputDevicesIndex);
 			//check in range
-			if (comboBoxCodecsIndex > 0 && comboBoxCodecsIndex <= comboBoxCodecs.Count)
+			if (InputDevicesIndex > 0 && InputDevicesIndex <= InputDevices.Count)
 			{
-				Console.WriteLine("Device " + comboBoxCodecsIndex + " selected successfully.");
+				Console.WriteLine("Device " + InputDevicesIndex + " selected successfully.");
 			}
 			else
 			{
-				comboBoxCodecsIndex = MyConst.defaultComboBoxCodecsIndex;
-				Console.WriteLine("Couldn't select Device " + comboBoxCodecsIndex + ", is chosen one By Default");
+				InputDevicesIndex = MyConst.defaultInputDevicesIndex;
+				Console.WriteLine("Couldn't select Device " + InputDevicesIndex + ", is chosen one By Default");
 			}
-			--comboBoxCodecsIndex;
+			--InputDevicesIndex;
 		}
 		/// <summary>
-		/// Add Connected Microphones detailes and Codecs 
+		/// see the Compression option list
 		/// </summary>
-		private void PopulateCodecsCombo()
+		private void printCodecs()
+		{
+			if (Codecs.Count == 0)
+			{
+				Console.WriteLine("No Codecs found");
+				return;
+			}
+			for (int i = 0; i < Codecs.Count; i++)
+			{
+				Console.WriteLine("{0}. {1}", (i + 1), Codecs[i].Text);
+			}
+		}
+		/// <summary>
+		/// call printCodecs() and then choose which one to use
+		/// </summary>
+		private void ChooseCodecSource()
+		{
+
+			Console.WriteLine("These are the possible sources:");
+			printCodecs();
+			Console.WriteLine("\nType in the number in the according line: ");
+			Int32.TryParse(Console.ReadLine(), out CodecsIndex);
+			//check in range
+			if (CodecsIndex > 0 && CodecsIndex <= Codecs.Count)
+			{
+				Console.WriteLine("Device " + CodecsIndex + " selected successfully.");
+			}
+			else
+			{
+				CodecsIndex = MyConst.defaultCodecsIndex;
+				Console.WriteLine("Couldn't select Device " + CodecsIndex + ", is chosen one By Default");
+			}
+			--CodecsIndex;
+		}
+		/// <summary>
+		/// Add Connected Microphones Names to NameList 
+		/// </summary>
+		private void PopulateInputDevices()
+		{
+			for (int n = 0; n < WaveIn.DeviceCount; n++)
+			{
+				var capabilities = WaveIn.GetCapabilities(n);
+				InputDevices.Add(capabilities.ProductName);
+			}
+			if (InputDevices.Count == 0)
+			{
+				Console.WriteLine("** No Input Devices Connected **");
+			}
+		}
+		/// <summary>
+		/// Add INetworkChatCodec detailes about Codecs 
+		/// </summary>
+		private void PopulateCodecs()
 		{
 			IEnumerable<INetworkChatCodec> codecs = ReflectionHelperInstances.CreatAllInstancesOf<INetworkChatCodec>();
-			comboBoxCodecs.Clear();
 			var sorted = from codec in codecs
 						 where codec.IsAvailable
 						 orderby codec.BitsPerSecond ascending
@@ -321,20 +373,16 @@ namespace audioStreamFinal
 			{
 				var bitRate = codec.BitsPerSecond == -1 ? "VBR" : $"{codec.BitsPerSecond / MyConst.kilo:0.#}kbps";
 				var text = $"{codec.Name} ({bitRate})";
-				comboBoxCodecs.Add(new CodecComboItem { Text = text, Codec = codec });
+				Codecs.Add(new CodecItem { Text = text, Codec = codec });
 			}
 		}
 		/// <summary>
-		/// Basic Data saved on every connected microphone
+		/// Basic Data saved on every Compression option
 		/// </summary>
-		class CodecComboItem
+		class CodecItem
 		{
 			public string Text { get; set; }
 			public INetworkChatCodec Codec { get; set; }
-			public override string ToString()
-			{
-				return Text;
-			}
 		}
 		/// <summary>
 		/// endsure everything for connection and catch if connection failes
@@ -346,9 +394,8 @@ namespace audioStreamFinal
 				try
 				{
 					IPEndPoint endPoint = CreateIPEndPoint(ipAddr + ":" + textPort);
-					int inputDeviceNumber = comboBoxCodecsIndex;
-					selectedCodec = ((CodecComboItem)comboBoxCodecs.First()).Codec;
-					Connect(isUDP, endPoint, inputDeviceNumber);
+					selectedCodec = ((CodecItem)Codecs[CodecsIndex]).Codec;
+					Connect(endPoint);
 					Console.WriteLine("-Connected");
 				}
 				catch (Exception e)
@@ -366,7 +413,7 @@ namespace audioStreamFinal
 		/// <param name="isUDP"></param>
 		/// <param name="endPoint"></param>
 		/// <param name="inputDeviceNumber"></param>
-		private void Connect(bool isUDP, IPEndPoint endPoint, int inputDeviceNumber)
+		private void Connect(IPEndPoint endPoint)
 		{
 			var receiver = (isUDP)
 				? (IAudioReceiver)new UdpAudioReceiver(endPoint.Port)
@@ -376,7 +423,7 @@ namespace audioStreamFinal
 				: new TcpAudioSender(endPoint);
 
 			player = new NetworkAudioPlayer(selectedCodec, receiver);
-			audioSender = new NetworkAudioSender(selectedCodec, inputDeviceNumber, sender);
+			audioSender = new NetworkAudioSender(selectedCodec, InputDevicesIndex, sender);
 			connected = true;
 		}
 		/// <summary>

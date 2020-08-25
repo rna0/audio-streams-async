@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave;
 
-namespace audioStreamFinal.BareMetal
+namespace audioStreamFinal.CompressionType
 {
 	class MS_ADPCM : AcmChatCodec
 	{
