@@ -15,13 +15,34 @@ namespace audioStreamFinal
 	public class NetworkChatPanel
 	{
 		/// <summary>
+		/// making definitions of all my constants
+		/// </summary>
+		class MyConst
+		{
+			//constants from isIPOk()
+			public const int ipV4Len = 4;
+			//constants from isPortOk()
+			public const int defaultPort = 8192;
+			public const int maxPort = 47823;
+			//constants from ChoosePrintSources()
+			public const int defaultComboBoxCodecsIndex = 0;
+			//constants from PopulateCodecsCombo()
+			public const double kilo = 1000.0;
+			//constants from outputVolumeControl()
+			public const int maxVolume = 10;
+			public const int minVolume = 0;
+			public const int volumeOffset = 0x0000ffff;
+			public const int pushVolumeOffset = 16;
+
+		}
+		/// <summary>
 		/// An object type which contains the Naudio WaveFormat and detailes about the wave
 		/// </summary>
 		private INetworkChatCodec selectedCodec;
 		/// <summary>
 		/// A boolean type which sets to true when a connection is made to make sure That no duplicates will be created
 		/// </summary>
-		private volatile bool connected = false;
+		private volatile bool connected;
 		/// <summary>
 		/// An object type which recieves the stream with Naudio IAudioReceiver, saves on the BufferedWaveProvider and plays with the IWavePlayer.
 		/// </summary>
@@ -33,15 +54,15 @@ namespace audioStreamFinal
 		/// <summary>
 		/// List of all devices marked as Microphones connected.
 		/// </summary>
-		private List<CodecComboItem> comboBoxCodecs = new List<CodecComboItem>();
+		private List<CodecComboItem> comboBoxCodecs;
 		/// <summary>
 		/// comboBoxCodecsIndex saves the number in the list of available microphones to be used and is read in the next connection attempt
 		/// </summary>
-		private int comboBoxCodecsIndex = MyConst.defaultComboBoxCodecsIndex;
+		private int comboBoxCodecsIndex;
 		/// <summary>
 		/// A boolean type which sets to true when the connection is set to be used with the udp protocol and TCP otherwise
 		/// </summary>
-		private bool isUDP = true;
+		private bool isUDP;
 		/// <summary>
 		/// contains the IP in string format to be sent to the client side
 		/// </summary>
@@ -49,11 +70,11 @@ namespace audioStreamFinal
 		/// <summary>
 		/// contains the Port in string format to be sent to the client side
 		/// </summary>
-		string textPort = MyConst.defaultPort.ToString();
+		string textPort;
 		/// <summary>
 		/// An integer which represents volume value from 1 up to 10
 		/// </summary>
-		int audioValue = MyConst.maxVolume;
+		int audioValue;
 		/// <summary>
 		/// Set the current volume on computer
 		/// </summary>
@@ -67,7 +88,15 @@ namespace audioStreamFinal
 		/// </summary>
 		public NetworkChatPanel()
 		{
+			//defining variables
+			connected = false;
+			comboBoxCodecs = new List<CodecComboItem>();
+			comboBoxCodecsIndex = MyConst.defaultComboBoxCodecsIndex;
+			isUDP = true;
 			ipAddr = GetLocalIPAddress();
+			textPort = MyConst.defaultPort.ToString();
+			audioValue = MyConst.maxVolume;
+
 			Console.WriteLine("Next connection detailes: {0}:{1}\n" +
 				"also these are the default IP adress and Port", ipAddr, textPort);
 			// Use reflection to find all the codecs and populate the codec list with them
@@ -439,23 +468,5 @@ namespace audioStreamFinal
 			}
 			throw new Exception("No network adapters with an IPv4 address in the system!");
 		}
-	}
-	class MyConst
-	{
-		//constants from isIPOk()
-		public const int ipV4Len = 4;
-		//constants from isPortOk()
-		public const int defaultPort = 8192;
-		public const int maxPort = 47823;
-		//constants from ChoosePrintSources()
-		public const int defaultComboBoxCodecsIndex = 0;
-		//constants from PopulateCodecsCombo()
-		public const double kilo = 1000.0;
-		//constants from outputVolumeControl()
-		public const int maxVolume = 10;
-		public const int minVolume = 0;
-		public const int volumeOffset = 0x0000ffff;
-		public const int pushVolumeOffset = 16;
-
 	}
 }
