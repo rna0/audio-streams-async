@@ -3,7 +3,7 @@ using NAudio.Wave;
 using System;
 using System.Diagnostics;
 
-namespace audioStreamFinal
+namespace audioStreamFinal.BareMetal
 {
 	class G722ChatCodec : INetworkChatCodec
 	{

@@ -3,6 +3,10 @@ using System;
 
 namespace audioStreamFinal
 {
+	/// <summary>
+	/// for more explanations about codecs watch here
+	/// https://www.twilio.com/docs/video/managing-codecs
+	/// </summary>
 	public interface INetworkChatCodec : IDisposable
 	{
 		string Name { get; }
