@@ -24,7 +24,7 @@ namespace audioStreamFinal
 		{
 			//constants from isIPOk()
 			public const int ipV4Len = 4;
-			//constants from isPortOk()
+			//constants fr om isPortOk()
 			public const int defaultPort = 8192;
 			public const int maxPort = 47823;
 			//constants from ChooseInputDevicesSource()
