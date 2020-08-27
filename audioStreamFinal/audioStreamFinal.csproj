@@ -107,8 +107,8 @@
     <Compile Include="NaudioStreamServices\ReciverType\UdpAudioReceiver.cs" />
     <Compile Include="NaudioStreamServices\SenderType\TcpAudioSender.cs" />
     <Compile Include="NaudioStreamServices\ReciverType\TcpAudioReceiver.cs" />
-    <Compile Include="NaudioStreamServices\ReflectionHelper.cs" />
-    <Compile Include="NaudioStreamServices\ReflectionHelperInstances.cs" />
+    <Compile Include="NaudioStreamServices\Reflection helper\ReflectionHelper.cs" />
+    <Compile Include="NaudioStreamServices\Reflection helper\ReflectionHelperInstances.cs" />
     <Compile Include="NaudioStreamServices\SenderType\NetowrkAudioSender.cs" />
     <Compile Include="NaudioStreamServices\ReciverType\IAudioReceiver.cs" />
     <Compile Include="NaudioStreamServices\SenderType\IAudioSender.cs" />
