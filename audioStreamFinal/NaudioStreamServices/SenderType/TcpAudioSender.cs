@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Windows.Forms;
 
-namespace audioStreamFinal
+namespace audioStreamFinal.SenderType
 {
 	class TcpAudioSender : IAudioSender
 	{

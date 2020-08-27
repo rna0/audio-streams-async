@@ -1,7 +1,7 @@
 ﻿using NAudio.Wave;
 using System;
 
-namespace audioStreamFinal
+namespace audioStreamFinal.ReciverType
 {
 	class NetworkAudioPlayer : IDisposable
 	{

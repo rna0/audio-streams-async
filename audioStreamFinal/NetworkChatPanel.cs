@@ -7,6 +7,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using NAudio.Wave;
+using audioStreamFinal.ReciverType;
+using audioStreamFinal.SenderType;
 
 namespace audioStreamFinal
 {

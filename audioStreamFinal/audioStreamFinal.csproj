@@ -93,31 +93,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NaudioStreamServices\BareMetal\ACM.cs" />
-    <Compile Include="NaudioStreamServices\BareMetal\ALaw.cs" />
+    <Compile Include="NaudioStreamServices\CompressionType\ACM.cs" />
+    <Compile Include="NaudioStreamServices\CompressionType\ALaw.cs" />
     <Compile Include="NetworkChatPanel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="NaudioStreamServices\BareMetal\MuLawChatCodec.cs" />
-    <Compile Include="NaudioStreamServices\BareMetal\G722ChatCodec.cs" />
-    <Compile Include="NaudioStreamServices\UdpAudioSender.cs" />
-    <Compile Include="NaudioStreamServices\UdpAudioReceiver.cs" />
-    <Compile Include="NaudioStreamServices\TcpAudioSender.cs" />
-    <Compile Include="NaudioStreamServices\TcpAudioReceiver.cs" />
+    <Compile Include="NaudioStreamServices\CompressionType\MuLawChatCodec.cs" />
+    <Compile Include="NaudioStreamServices\CompressionType\G722ChatCodec.cs" />
+    <Compile Include="NaudioStreamServices\SenderType\UdpAudioSender.cs" />
+    <Compile Include="NaudioStreamServices\ReciverType\UdpAudioReceiver.cs" />
+    <Compile Include="NaudioStreamServices\SenderType\TcpAudioSender.cs" />
+    <Compile Include="NaudioStreamServices\ReciverType\TcpAudioReceiver.cs" />
     <Compile Include="NaudioStreamServices\ReflectionHelper.cs" />
     <Compile Include="NaudioStreamServices\ReflectionHelperInstances.cs" />
-    <Compile Include="NaudioStreamServices\NetowrkAudioSender.cs" />
-    <Compile Include="NaudioStreamServices\IAudioReceiver.cs" />
-    <Compile Include="NaudioStreamServices\IAudioSender.cs" />
-    <Compile Include="NaudioStreamServices\INetworkChatCodec.cs" />
-    <Compile Include="NaudioStreamServices\BareMetal\MS-ADPCM.cs" />
-    <Compile Include="NaudioStreamServices\NetworkAudioPlayer.cs" />
+    <Compile Include="NaudioStreamServices\SenderType\NetowrkAudioSender.cs" />
+    <Compile Include="NaudioStreamServices\ReciverType\IAudioReceiver.cs" />
+    <Compile Include="NaudioStreamServices\SenderType\IAudioSender.cs" />
+    <Compile Include="NaudioStreamServices\CompressionType\INetworkChatCodec.cs" />
+    <Compile Include="NaudioStreamServices\CompressionType\MS-ADPCM.cs" />
+    <Compile Include="NaudioStreamServices\ReciverType\NetworkAudioPlayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="NaudioStreamServices\NetowrkAudioSender.resx">
+    <EmbeddedResource Include="NaudioStreamServices\SenderType\NetowrkAudioSender.resx">
       <DependentUpon>NetowrkAudioSender.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
