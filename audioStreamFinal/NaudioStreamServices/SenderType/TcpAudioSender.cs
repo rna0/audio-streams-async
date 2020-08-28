@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Windows.Forms;
 
 namespace audioStreamFinal.SenderType
 {
@@ -16,7 +15,7 @@ namespace audioStreamFinal.SenderType
 			}
 			catch
 			{
-				MessageBox.Show("The connection timed out");
+				System.Console.WriteLine("## The connection timed out ##");
 			}
 		}
 
