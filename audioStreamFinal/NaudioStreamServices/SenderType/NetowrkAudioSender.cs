@@ -12,12 +12,14 @@ namespace audioStreamFinal.SenderType
 		private readonly WaveInEvent waveIn;
 		private byte[] bufferEncoded;
 		public int inputVol, temp;
+		private bool connected;
 
 		public NetworkAudioSender(INetworkChatCodec codec, int inputDeviceNumber, IAudioSender audioSender)
 		{
 			this.codec = codec;
 			this.audioSender = audioSender;
 
+			this.connected = true;
 			this.SendAudio(audioSender);
 
 			waveIn = new WaveInEvent();
@@ -33,7 +35,7 @@ namespace audioStreamFinal.SenderType
 		{
 			await Task.Run(() =>
 			{
-				while (true)
+				while (this.connected)
 				{
 					if (this.bufferEncoded != null)
 					{
@@ -76,6 +78,7 @@ namespace audioStreamFinal.SenderType
 
 		public void Dispose()
 		{
+			this.connected = false;
 			waveIn.DataAvailable -= OnAudioCaptured;
 			waveIn.StopRecording();
 			waveIn.Dispose();

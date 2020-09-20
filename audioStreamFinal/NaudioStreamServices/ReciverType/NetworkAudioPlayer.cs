@@ -10,6 +10,7 @@ namespace audioStreamFinal.ReciverType
 		private readonly IAudioReceiver receiver;
 		private readonly IWavePlayer waveOut;
 		private readonly BufferedWaveProvider waveProvider;
+		private bool connected;
 		private byte[] bufferDecoded;
 
 		public NetworkAudioPlayer(INetworkChatCodec codec, IAudioReceiver receiver)
@@ -18,6 +19,7 @@ namespace audioStreamFinal.ReciverType
 			this.receiver = receiver;
 			receiver.OnReceived(OnDataReceived);
 
+			this.connected = true;
 			this.ReceiveAudio(receiver);
 
 			waveOut = new WaveOut();
@@ -30,7 +32,7 @@ namespace audioStreamFinal.ReciverType
 		{
 			await Task.Run(() =>
 			{
-				while (true)
+				while (this.connected)
 				{
 					if (this.bufferDecoded != null)
 					{
@@ -49,6 +51,7 @@ namespace audioStreamFinal.ReciverType
 
 		public void Dispose()
 		{
+			this.connected = false;
 			receiver?.Dispose();
 			waveOut?.Dispose();
 		}
