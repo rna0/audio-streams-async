@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave;
 using System;
-using System.Windows.Forms;
+using System.Threading.Tasks;
 
 namespace audioStreamFinal.SenderType
 {
@@ -10,13 +10,15 @@ namespace audioStreamFinal.SenderType
 		private readonly INetworkChatCodec codec;
 		private readonly IAudioSender audioSender;
 		private readonly WaveInEvent waveIn;
+		private byte[] bufferEncoded;
 		public int inputVol, temp;
-		Timer inputBuffer = new Timer { Interval = 500, Enabled = false };
 
 		public NetworkAudioSender(INetworkChatCodec codec, int inputDeviceNumber, IAudioSender audioSender)
 		{
 			this.codec = codec;
 			this.audioSender = audioSender;
+
+			this.SendAudio(audioSender);
 
 			waveIn = new WaveInEvent();
 
@@ -25,7 +27,23 @@ namespace audioStreamFinal.SenderType
 			waveIn.WaveFormat = codec.RecordFormat;
 			waveIn.DataAvailable += OnAudioCaptured;
 			waveIn.StartRecording();
+		}
 
+		private async Task SendAudio(IAudioSender audioSender)
+		{
+			await Task.Run(() =>
+			{
+				while (true)
+				{
+					if (this.bufferEncoded != null)
+					{
+						audioSender.Send(this.bufferEncoded);
+						this.bufferEncoded = null;
+					}
+
+					Task.Delay(50);
+				}
+			});
 		}
 
 		private void OnAudioCaptured(object sender, WaveInEventArgs e)
@@ -53,21 +71,7 @@ namespace audioStreamFinal.SenderType
 				}
 			}
 
-			//Microphone input sensitivty, controlled via scroll bar
-			//500ms buffer using timer to stop choppy audio output
-			inputBuffer.Enabled = true;
-			inputBuffer.Tick += new EventHandler(BufferTimeout);
-
-			if (inputBuffer.Enabled)
-			{
-				byte[] encoded = codec.Encode(e.Buffer, 0, e.BytesRecorded);
-				audioSender.Send(encoded);
-			}
-		}
-
-		private void BufferTimeout(object sender, EventArgs e)
-		{
-			inputBuffer.Enabled = false;
+			this.bufferEncoded = codec.Encode(e.Buffer, 0, e.BytesRecorded);
 		}
 
 		public void Dispose()
