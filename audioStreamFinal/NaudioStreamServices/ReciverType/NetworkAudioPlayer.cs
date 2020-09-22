@@ -19,16 +19,14 @@ namespace audioStreamFinal.ReciverType
 			this.receiver = receiver;
 			receiver.OnReceived(OnDataReceived);
 
-			this.connected = true;
-			this.ReceiveAudio(receiver);
-
 			waveOut = new WaveOut();
 			waveProvider = new BufferedWaveProvider(codec.RecordFormat);
 			waveOut.Init(waveProvider);
 			waveOut.Play();
-		}
 
-		private async Task ReceiveAudio(IAudioReceiver audioSender)
+			this.connected = true;
+		}
+		internal async Task ReceiveAudio(IAudioReceiver audioSender)
 		{
 			await Task.Run(() =>
 			{

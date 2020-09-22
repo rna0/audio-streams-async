@@ -19,9 +19,6 @@ namespace audioStreamFinal.SenderType
 			this.codec = codec;
 			this.audioSender = audioSender;
 
-			this.connected = true;
-			this.SendAudio(audioSender);
-
 			waveIn = new WaveInEvent();
 
 			waveIn.BufferMilliseconds = 50;
@@ -29,9 +26,11 @@ namespace audioStreamFinal.SenderType
 			waveIn.WaveFormat = codec.RecordFormat;
 			waveIn.DataAvailable += OnAudioCaptured;
 			waveIn.StartRecording();
+
+			this.connected = true;
 		}
 
-		private async Task SendAudio(IAudioSender audioSender)
+		internal async Task SendAudio(IAudioSender audioSender)
 		{
 			await Task.Run(() =>
 			{

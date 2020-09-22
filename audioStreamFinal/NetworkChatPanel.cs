@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using NAudio.Wave;
 using audioStreamFinal.ReciverType;
 using audioStreamFinal.SenderType;
+using System.Threading.Tasks;
 
 namespace audioStreamFinal
 {
@@ -425,7 +426,11 @@ namespace audioStreamFinal
 				: new TcpAudioSender(endPoint);
 
 			player = new NetworkAudioPlayer(selectedCodec, receiver);
+			player.ReceiveAudio(receiver);
+
 			audioSender = new NetworkAudioSender(selectedCodec, InputDevicesIndex, sender);
+			audioSender.SendAudio(sender);
+
 			connected = true;
 		}
 		/// <summary>
