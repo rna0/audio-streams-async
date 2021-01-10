@@ -4,58 +4,59 @@ using NAudio.Wave;
 
 namespace AudioStream.NAudioStreamServices.SenderType
 {
-    class NetworkAudioSender
+    internal class NetworkAudioSender
     {
-        private readonly INetworkChatCodec codec;
-        private readonly IAudioSender audioSender;
-        private readonly WaveInEvent waveIn;
-        public int inputVol, temp;
+        private readonly INetworkChatCodec Codec;
+        private readonly IAudioSender AudioSender;
+        private readonly WaveInEvent WaveIn;
+        private int InputVol;
+        private int Temp;
 
         public NetworkAudioSender(INetworkChatCodec codec, int inputDeviceNumber, IAudioSender audioSender)
         {
-            this.codec = codec;
-            this.audioSender = audioSender;
+            Codec = codec;
+            AudioSender = audioSender;
 
-            waveIn = new WaveInEvent();
+            WaveIn = new WaveInEvent
+            {
+                BufferMilliseconds = 50, DeviceNumber = inputDeviceNumber, WaveFormat = codec.RecordFormat
+            };
 
-            waveIn.BufferMilliseconds = 50;
-            waveIn.DeviceNumber = inputDeviceNumber;
-            waveIn.WaveFormat = codec.RecordFormat;
-            waveIn.DataAvailable += OnAudioCaptured;
-            waveIn.StartRecording();
+            WaveIn.DataAvailable += OnAudioCaptured;
+            WaveIn.StartRecording();
         }
 
         private void OnAudioCaptured(object sender, WaveInEventArgs e)
         {
-            for (int i = 0; i < e.BytesRecorded; i += 2)
+            for (var i = 0; i < e.BytesRecorded; i += 2)
             {
-                short sample = (short) ((e.Buffer[i + 1] << 8) |
-                                        e.Buffer[i + 0]);
-                float sample32 = sample / 32768f;
+                var sample = (short) ((e.Buffer[i + 1] << 8) |
+                                      e.Buffer[i + 0]);
+                var sample32 = sample / 32768f;
 
                 //Audio converted to db value.
-                double sampleD = (double) sample32;
+                var sampleD = (double) sample32;
                 sampleD = 20 * Math.Log10(Math.Abs(sampleD));
-                temp = (int) sampleD + 100;
+                Temp = (int) sampleD + 100;
 
                 //Filter to remove nonsensical db outputs
-                if (temp > 0 && temp < 100)
+                if (Temp > 0 && Temp < 100)
                 {
-                    inputVol = temp;
+                    InputVol = Temp;
                 }
             }
 
-            byte[] encoded = codec.Encode(e.Buffer, 0, e.BytesRecorded);
-            audioSender.Send(encoded);
+            var encoded = Codec.Encode(e.Buffer, 0, e.BytesRecorded);
+            AudioSender.Send(encoded);
         }
 
         public void Dispose()
         {
-            waveIn.DataAvailable -= OnAudioCaptured;
-            waveIn.StopRecording();
-            waveIn.Dispose();
-            waveIn?.Dispose();
-            audioSender?.Dispose();
+            WaveIn.DataAvailable -= OnAudioCaptured;
+            WaveIn.StopRecording();
+            WaveIn.Dispose();
+            WaveIn?.Dispose();
+            AudioSender?.Dispose();
         }
     }
 }
