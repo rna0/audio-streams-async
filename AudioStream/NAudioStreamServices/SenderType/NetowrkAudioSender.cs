@@ -1,5 +1,5 @@
 ﻿using System;
-using AudioStream.NAudioStreamServices.CompressionType;
+using AudioStream.NAudioStreamServices.Compression;
 using NAudio.Wave;
 
 namespace AudioStream.NAudioStreamServices.SenderType

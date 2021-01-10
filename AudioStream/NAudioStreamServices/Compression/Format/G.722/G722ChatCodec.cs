@@ -3,7 +3,7 @@ using System.Diagnostics;
 using NAudio.Codecs;
 using NAudio.Wave;
 
-namespace AudioStream.NAudioStreamServices.CompressionType
+namespace AudioStream.NAudioStreamServices.Compression.Format.G._722
 {
     class G722ChatCodec : INetworkChatCodec
     {

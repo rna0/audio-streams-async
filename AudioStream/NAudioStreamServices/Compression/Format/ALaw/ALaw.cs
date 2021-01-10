@@ -1,22 +1,23 @@
 ﻿using System;
+using AudioStream.NAudioStreamServices.Compression.Format.ACM;
 using NAudio.Codecs;
 using NAudio.Wave;
 
-namespace AudioStream.NAudioStreamServices.CompressionType
+namespace AudioStream.NAudioStreamServices.Compression.Format.ALaw
 {
-    class AcmMuLawChatCodec : AcmChatCodec
+    class ALaw : AcmChatCodec
     {
-        public AcmMuLawChatCodec()
-            : base(new WaveFormat(8000, 16, 1), WaveFormat.CreateMuLawFormat(8000, 1))
+        public ALaw()
+            : base(new WaveFormat(8000, 16, 1), WaveFormat.CreateALawFormat(8000, 1))
         {
         }
 
-        public override string Name => "ACM G.711 mu-law";
+        public override string Name => "ACM G.711 a-law";
     }
 
-    class MuLawChatCodec : INetworkChatCodec
+    class ALawCodec : INetworkChatCodec
     {
-        public string Name => "G.711 mu-law";
+        public string Name => "G.711 a-law";
 
         public int BitsPerSecond => RecordFormat.SampleRate * 8;
 
@@ -28,7 +29,7 @@ namespace AudioStream.NAudioStreamServices.CompressionType
             var outIndex = 0;
             for (var n = 0; n < length; n += 2)
             {
-                encoded[outIndex++] = MuLawEncoder.LinearToMuLawSample(BitConverter.ToInt16(data, offset + n));
+                encoded[outIndex++] = ALawEncoder.LinearToALawSample(BitConverter.ToInt16(data, offset + n));
             }
 
             return encoded;
@@ -40,7 +41,7 @@ namespace AudioStream.NAudioStreamServices.CompressionType
             var outIndex = 0;
             for (var n = 0; n < length; n++)
             {
-                var decodedSample = MuLawDecoder.MuLawToLinearSample(data[n + offset]);
+                var decodedSample = ALawDecoder.ALawToLinearSample(data[n + offset]);
                 decoded[outIndex++] = (byte) (decodedSample & 0xFF);
                 decoded[outIndex++] = (byte) (decodedSample >> 8);
             }
@@ -50,7 +51,7 @@ namespace AudioStream.NAudioStreamServices.CompressionType
 
         public void Dispose()
         {
-            //Nada
+            //Nothing but empty space
         }
 
         public bool IsAvailable => true;

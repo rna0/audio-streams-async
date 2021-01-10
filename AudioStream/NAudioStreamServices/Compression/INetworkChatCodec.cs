@@ -1,7 +1,7 @@
 ﻿using System;
 using NAudio.Wave;
 
-namespace AudioStream.NAudioStreamServices.CompressionType
+namespace AudioStream.NAudioStreamServices.Compression
 {
     /// <summary>
     /// for more explanations about codecs watch here

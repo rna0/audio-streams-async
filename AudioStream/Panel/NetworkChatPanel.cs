@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using AudioStream.NAudioStreamServices.CompressionType;
+using AudioStream.NAudioStreamServices.Compression;
 using AudioStream.NAudioStreamServices.ReceiverType;
 using AudioStream.NAudioStreamServices.Reflection_helper;
 using AudioStream.NAudioStreamServices.SenderType;

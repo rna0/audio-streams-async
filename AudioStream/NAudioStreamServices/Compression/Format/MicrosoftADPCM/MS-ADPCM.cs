@@ -1,6 +1,7 @@
-﻿using NAudio.Wave;
+﻿using AudioStream.NAudioStreamServices.Compression.Format.ACM;
+using NAudio.Wave;
 
-namespace AudioStream.NAudioStreamServices.CompressionType
+namespace AudioStream.NAudioStreamServices.Compression.Format.MicrosoftADPCM
 {
     class MS_ADPCM : AcmChatCodec
     {

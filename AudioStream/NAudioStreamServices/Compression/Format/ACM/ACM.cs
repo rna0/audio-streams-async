@@ -3,7 +3,7 @@ using NAudio;
 using NAudio.Wave;
 using NAudio.Wave.Compression;
 
-namespace AudioStream.NAudioStreamServices.CompressionType
+namespace AudioStream.NAudioStreamServices.Compression.Format.ACM
 {
     internal abstract class AcmChatCodec : INetworkChatCodec
     {
